@@ -1,3 +1,5 @@
+cmake_minimum_required(VERSION 3.14)
+
 project(MyCaculator)
 
 set(CMAKE_CXX_STANDARD 11)
@@ -6,12 +8,14 @@ add_subdirectory(src)
 
 # googletest
 find_package(GTest REQUIRED)
-include_directories(${GTEST_INCLUDE_DIRS})
-add_executable(MyTests test.cpp)
-target_link_libraries(MyTests ${GTEST_INCLUDE_DIRS})
-gtest_discover_tests(hello_test)
 enable_testing()
+include(GoogleTest)
+add_executable(MyTest test.cpp)
+target_link_libraries(MyTest tools gtest gtest_main gmock pthread)
+
+# gtest_discover_tests make the vscode to execute [MyTest] through test button.
+gtest_discover_tests(MyTest)
 
 # main
-# add_executable(MyCaculator main.cpp)
-# target_link_libraries(MyCaculator tools)
+add_executable(MyCaculator main.cpp)
+target_link_libraries(MyCaculator tools)

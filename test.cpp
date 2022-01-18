@@ -6,13 +6,18 @@
 
 #include "include/caculator.h"
 
-MyCaculator myCaculator;
+TEST(Caculator, Equal) {
+    MyCaculator myCaculator;
+    EXPECT_EQ(2, myCaculator.caculator(std::string("1+1")));
+    // EXPECT_EQ(1, 1);
+}
 
-TEST(MyCaculator, test0) {
-    EXPECT_EQ(myCaculator.caculator(std::string("1+1")), 2);  
+TEST(Caculator, UnEqual) {
+    MyCaculator myCaculator;
+    EXPECT_NE(2, myCaculator.caculator(std::string("1+3")));
 }
 
 int main(int argc, char *argv[]) {
-    testing::InitGoogleTest(&argc, argv);
+    ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }
