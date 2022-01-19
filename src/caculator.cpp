@@ -3,8 +3,8 @@
 #include <stdlib.h>
 #include <ctype.h> 
 
-#include "../include/caculator.h"
-#include "../include/common.h"
+#include "caculator.h"
+#include "common.h"
 
 // #define DEBUG
 
@@ -81,7 +81,7 @@ double MyCaculator::caculator(const string &&input) {
             continue;
         }
         if (input[i] == ')') {
-            number = strtof(numberStr.c_str(), nullptr);
+            number = strtod(numberStr.c_str(), nullptr);
             _numStack.push(number);
             numberStr.clear();
             execute();
@@ -93,11 +93,11 @@ double MyCaculator::caculator(const string &&input) {
         if (isdigit(input[i])) {
             numberStr.push_back(input[i]);
             continue;
-        }
+        } 
 
         if (isOperator(input[i])) {
             if (!numberStr.empty()) {
-                _numStack.push(strtof(numberStr.c_str(), nullptr));
+                _numStack.push(strtod(numberStr.c_str(), nullptr));
             }
             
             numberStr.clear();

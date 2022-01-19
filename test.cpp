@@ -9,7 +9,8 @@
 TEST(Caculator, Equal) {
     MyCaculator myCaculator;
     EXPECT_EQ(2, myCaculator.caculator(std::string("1+1")));
-    // EXPECT_EQ(1, 1);
+    EXPECT_EQ(7, myCaculator.caculator(std::string("1+2*(1+2)")));
+    EXPECT_EQ(-1.0, myCaculator.caculator(std::string("1-2*(1+2)/3")));
 }
 
 TEST(Caculator, UnEqual) {
