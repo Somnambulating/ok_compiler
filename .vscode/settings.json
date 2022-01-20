@@ -1,3 +1,4 @@
 {
-    "cmake.configureSettings": { "gtest_build_samples": "ON" }
+    "cmake.configureSettings": { "gtest_build_samples": "ON" },
+    "C_Cpp.default.includePath": ["/home/descosmos/tools/llvm-project/llvm/include/"]
 }
