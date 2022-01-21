@@ -103,6 +103,7 @@ class ExprAST {
 public:
   virtual ~ExprAST() = default;
 
+  /// 添加抽象方法 codegen()，用来将AST转换为相应的LLVM IR
   virtual Value *codegen() = 0;
 };
 
@@ -410,10 +411,12 @@ Value *LogErrorV(const char *Str) {
 }
 
 Value *NumberExprAST::codegen() {
+  //  生成常量的LLVM IR表示
   return ConstantFP::get(*TheContext, APFloat(Val));
 }
 
 Value *VariableExprAST::codegen() {
+  //  生成变量的LLVM IR表示
   // Look this variable up in the function.
   Value *V = NamedValues[Name];
   if (!V)
@@ -422,6 +425,7 @@ Value *VariableExprAST::codegen() {
 }
 
 Value *BinaryExprAST::codegen() {
+  //  生成算术运算的LLVM IR表示
   Value *L = LHS->codegen();
   Value *R = RHS->codegen();
   if (!L || !R)
@@ -444,15 +448,20 @@ Value *BinaryExprAST::codegen() {
 }
 
 Value *CallExprAST::codegen() {
+  //  生成函数调用的LLVM IR表示
   // Look up the name in the global module table.
+
+  //  生成函数调用名
   Function *CalleeF = TheModule->getFunction(Callee);
   if (!CalleeF)
     return LogErrorV("Unknown function referenced");
 
   // If argument mismatch error.
+  // [传入参数] 与 [函数规定参数] 的个数是否匹配
   if (CalleeF->arg_size() != Args.size())
     return LogErrorV("Incorrect # arguments passed");
 
+  // 将参数转换为LLVM IR格式，并将所有函数参数集中存储在 ArgsV中
   std::vector<Value *> ArgsV;
   for (unsigned i = 0, e = Args.size(); i != e; ++i) {
     ArgsV.push_back(Args[i]->codegen());
@@ -464,15 +473,20 @@ Value *CallExprAST::codegen() {
 }
 
 Function *PrototypeAST::codegen() {
+  //  生成函数签名的 LLVM IR表示
   // Make the function type:  double(double,double) etc.
+
+  //  函数的参数以及函数的类型
   std::vector<Type *> Doubles(Args.size(), Type::getDoubleTy(*TheContext));
   FunctionType *FT =
       FunctionType::get(Type::getDoubleTy(*TheContext), Doubles, false);
 
+  //  生成在Module 中独一无二的函数签名
   Function *F =
       Function::Create(FT, Function::ExternalLinkage, Name, TheModule.get());
 
   // Set names for all arguments.
+  //  为函数的参数设置名称 [1, 2, 3, ...]
   unsigned Idx = 0;
   for (auto &Arg : F->args())
     Arg.setName(Args[Idx++]);
@@ -481,6 +495,7 @@ Function *PrototypeAST::codegen() {
 }
 
 Function *FunctionAST::codegen() {
+  //  生成函数定义部分的 LLVM IR表示
   // First, check for an existing function from a previous 'extern' declaration.
   Function *TheFunction = TheModule->getFunction(Proto->getName());
 
@@ -490,15 +505,19 @@ Function *FunctionAST::codegen() {
   if (!TheFunction)
     return nullptr;
 
+  //  生成入口部分的 block
   // Create a new basic block to start insertion into.
   BasicBlock *BB = BasicBlock::Create(*TheContext, "entry", TheFunction);
   Builder->SetInsertPoint(BB);
 
   // Record the function arguments in the NamedValues map.
+  // 因为函数内部定义的变量会覆盖掉同名的外部变量，因此需要使用 clear 方法，
+  // 并且，函数的参数在该函数内部是 "全局"的，因此将函数参数添加到 NamedValues 中
   NamedValues.clear();
   for (auto &Arg : TheFunction->args())
     NamedValues[std::string(Arg.getName())] = &Arg;
 
+  //  生成函数返回值部分的 LLVM IR表示
   if (Value *RetVal = Body->codegen()) {
     // Finish off the function.
     Builder->CreateRet(RetVal);
